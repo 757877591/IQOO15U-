@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">IQOO肩键扩展</string>
+    <string name="module_description">扩展iQOO 15Ultra肩键支持应用范围</string>
+    <string-array name="xposed_scope"><item>com.vivo.gamecube</item></string-array>
+    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:colorAccent">#238CB8</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+    </style>
+</resources>

@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.apk -text
+*.zip -text
+*.p12 -text
+*.jar -text

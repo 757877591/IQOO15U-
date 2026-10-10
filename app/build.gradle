@@ -1,0 +1,59 @@
+plugins { id 'com.android.application' }
+
+// The release helper supplies credentials from the local, ignored .signing directory.
+// No private key or password belongs in source control.
+def releaseStore = System.getenv('IQOO_KEYSTORE')
+def releaseStorePassword = System.getenv('IQOO_STORE_PASSWORD')
+def releaseAlias = System.getenv('IQOO_KEY_ALIAS')
+def releaseKeyPassword = System.getenv('IQOO_KEY_PASSWORD')
+def hasReleaseSigning = [releaseStore, releaseStorePassword, releaseAlias, releaseKeyPassword]
+        .every { it != null && !it.isEmpty() }
+
+android {
+    namespace 'ls.iqooaugment.com'
+    compileSdk 35
+    buildToolsVersion '35.0.0'
+    defaultConfig {
+        applicationId 'ls.iqooaugment.com'
+        minSdk 29
+        targetSdk 35
+        versionCode 10010
+        versionName '0.1.0-alpha10'
+    }
+    buildFeatures { buildConfig true }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    signingConfigs {
+        if (hasReleaseSigning) {
+            release {
+                storeFile file(releaseStore)
+                storePassword releaseStorePassword
+                keyAlias releaseAlias
+                keyPassword releaseKeyPassword
+                enableV1Signing true
+                enableV2Signing true
+            }
+        }
+    }
+    buildTypes {
+        debug { minifyEnabled false }
+        release {
+            debuggable false
+            jniDebuggable false
+            // RootMain and the Xposed entry are loaded by name. Preserve both.
+            minifyEnabled false
+            shrinkResources false
+            if (hasReleaseSigning) signingConfig signingConfigs.release
+        }
+    }
+}
+dependencies { compileOnly 'de.robv.android.xposed:api:82' }
+
+// Do not silently hand out an unsigned APK as a release build.
+gradle.taskGraph.whenReady { graph ->
+    if (!hasReleaseSigning && graph.allTasks.any { it.path == ':app:packageRelease' }) {
+        throw new GradleException('Release signing is not configured. Use release.ps1 or release.sh.')
+    }
+}
