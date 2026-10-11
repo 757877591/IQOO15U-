@@ -135,6 +135,7 @@ print('PASS: cp936 Python source reads and UTF-8 subprocess output')
         tests = self.folder / 'tests' / 'androidjson'
         tests.mkdir(parents=True)
         shutil.copy2(TOOLS.parent / 'tests/androidjson/DataParsingTests.java', tests)
+        shutil.copy2(TOOLS.parent / 'tests/androidjson/UpdateManifestTests.java', tests)
         output = io.StringIO()
         with patch.object(check_android_json, 'ROOT', self.folder), \
                 patch.object(sys, 'argv', ['check_android_json.py', '--json-jar', str(JSON_JAR)]), \
@@ -143,6 +144,7 @@ print('PASS: cp936 Python source reads and UTF-8 subprocess output')
         report = json.loads((self.folder / 'docs/data-parser-test-results.json').read_text(encoding='utf-8'))
         self.assertEqual('PASS: 33 Android-style JSON parser integration assertions (host only)', report['suite'])
         self.assertIn(report['suite'], output.getvalue())
+        self.assertEqual('PASS: 20 strict update-manifest parsing checks.', report['update_manifest_suite'])
 
 
 def main():

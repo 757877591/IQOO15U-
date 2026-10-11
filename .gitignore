@@ -15,6 +15,24 @@ local.properties
 credentials.json
 *.log
 .DS_Store
+.env
+.env.*
+*.pfx
+*.pem
+*.key
+*.idsig
+*.hprof
+*.dmp
+*.bak
+*.7z
+*.rar
+*.tar
+*.gz
+*.bz2
+*.xz
+.cxx/
+.externalNativeBuild/
+out/
 
 .build-tools/
 *.class

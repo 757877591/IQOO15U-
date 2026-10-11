@@ -29,7 +29,9 @@ def main():
     descriptions = [node.text for file in (ROOT/'app/src/main/res').rglob('*.xml') for node in ET.parse(file).getroot().findall('string') if node.attrib.get('name') == 'module_description']
     assert descriptions == ['扩展iQOO 15Ultra肩键支持应用范围'], descriptions
     permissions={node.attrib[NS+'name'] for node in manifest.findall('uses-permission')}
-    assert permissions==set(),permissions
+    assert permissions=={'android.permission.INTERNET','android.permission.REQUEST_INSTALL_PACKAGES'},permissions
+    update_provider=next(node for node in manifest.findall('application/provider') if node.attrib[NS+'name']=='.update.UpdateApkProvider')
+    assert update_provider.attrib[NS+'exported']=='false' and update_provider.attrib[NS+'grantUriPermissions']=='true'
     assert {node.attrib[NS+'name'] for node in manifest.findall('queries/package')} == {'com.vivo.gamecube','org.lsposed.manager'}
     for source in BASE.rglob('*.java'):
         assert not re.search(r'Settings\.(?:Global|Secure|System)\.(?:put\w*|set\w*)\s*\(', source.read_text(encoding='utf-8')),source
@@ -47,8 +49,8 @@ def main():
     assert "namespace 'ls.iqooaugment.com'" in gradle
     assert "applicationId 'ls.iqooaugment.com'" in gradle
     assert 'debuggable false' in gradle
-    assert 'versionCode 10010' in gradle
-    assert "versionName '0.1.0-alpha10'" in gradle
+    assert 'versionCode 10011' in gradle
+    assert "versionName '0.1.0-alpha11'" in gradle
     assert 'enableV2Signing true' in gradle
     assert manifest.find('application/provider').attrib[NS+'authorities']=='${applicationId}.config'
     assert '"ls.iqooaugment.com"' in (BASE/'Constants.java').read_text(encoding='utf-8')

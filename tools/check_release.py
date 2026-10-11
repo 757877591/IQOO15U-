@@ -24,9 +24,10 @@ def main():
     assert description and description.group(1) == '扩展iQOO 15Ultra肩键支持应用范围', 'Wrong packaged LSPosed description'
     signatures = sdk_output(args.build_tools, 'apksigner', 'verify', '--verbose', '--print-certs', args.apk)
     alignment = sdk_output(args.build_tools, 'zipalign', '-c', '-P', '16', '-v', '4', args.apk)
-    assert "package: name='ls.iqooaugment.com' versionCode='10010' versionName='0.1.0-alpha10'" in badging
+    assert "package: name='ls.iqooaugment.com' versionCode='10011' versionName='0.1.0-alpha11'" in badging
     assert 'application-debuggable' not in badging
-    assert not re.search(r'uses-permission', permissions + manifest)
+    declared_permissions=set(re.findall(r"uses-permission: name='([^']+)'", permissions))
+    assert declared_permissions=={'android.permission.INTERNET','android.permission.REQUEST_INSTALL_PACKAGES'},declared_permissions
     assert 'ls.iqooaugment.com.config' in manifest
     assert 'com.vivo.gamecube' in manifest and 'org.lsposed.manager' in manifest
     assert 'android:allowBackup' in manifest and 'android:allowBackup(0x01010280)=(type 0x12)0x0' in manifest
@@ -49,11 +50,13 @@ def main():
         assert all(name.startswith('Lls/iqooaugment/com/') for name in definitions)
         assert not any(name in '\n'.join(definitions) for name in ('SessionFence','DispatchContext','UiOverrideScope')), 'Obsolete takeover classes packaged'
         assert not any('Landroid/provider/Settings$' in method and '->put' in method for method in dex.methods)
-        assert not any(part in '\n'.join(dex.types) for part in ('Ljava/net/Socket;', 'Ljava/net/HttpURLConnection;', 'Landroid/webkit/WebView;'))
-    result = {'apk': args.apk.name, 'package': 'ls.iqooaugment.com', 'version_name': '0.1.0-alpha10',
-        'version_code': 10010, 'bytes': args.apk.stat().st_size, 'sha256': hashlib.sha256(args.apk.read_bytes()).hexdigest(),
+        assert 'Lls/iqooaugment/com/update/UpdateManager;' in definitions
+        assert 'Lls/iqooaugment/com/update/UpdateApkProvider;' in definitions
+        assert not any(part in '\n'.join(dex.types) for part in ('Ljava/net/Socket;', 'Landroid/webkit/WebView;'))
+    result = {'apk': args.apk.name, 'package': 'ls.iqooaugment.com', 'version_name': '0.1.0-alpha11',
+        'version_code': 10011, 'bytes': args.apk.stat().st_size, 'sha256': hashlib.sha256(args.apk.read_bytes()).hexdigest(),
         'module_description': description.group(1), 'packaged_description_check': 'PASS',
-        'declared_permissions': [], 'manifest_check': 'PASS', 'signature_v2': 'PASS',
+        'declared_permissions': sorted(declared_permissions), 'manifest_check': 'PASS', 'signature_v2': 'PASS',
         'signer_sha256': cert, 'previous_signer_matches': previous_cert == cert if previous_cert else None,
         'new_signer_expected': args.expect_new_signer, 'previous_signer_sha256': previous_cert,
         'zip_alignment': 'PASS', 'xposed_and_root_entries': 'PASS', 'defined_dex_classes': len(definitions),

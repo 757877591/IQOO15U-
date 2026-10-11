@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Base64;
@@ -38,6 +39,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import ls.iqooaugment.com.BuildConfig;
 import ls.iqooaugment.com.Constants;
+import ls.iqooaugment.com.update.UpdateManager;
+import ls.iqooaugment.com.update.UpdateRelease;
 import ls.iqooaugment.com.core.AppKey;
 import ls.iqooaugment.com.core.ScanPolicy;
 import ls.iqooaugment.com.core.UiMetrics;
@@ -61,7 +64,7 @@ import java.util.Map;
 import java.util.Set;
 import org.json.JSONObject;
 
-public final class MainActivity extends Activity {
+public final class MainActivity extends Activity implements UpdateManager.Listener {
     private static final String HOME="home", MODULE="module", ABOUT="about", ADD="add";
     private static final String[] PAGES={HOME,MODULE,ABOUT,ADD};
     private String page=HOME, homeQuery="", addQuery="";
@@ -70,6 +73,9 @@ public final class MainActivity extends Activity {
     private final Set<ScanPolicy.SpaceKey> scanScope=new LinkedHashSet<>();
     private boolean recoveringScopeSelection;
     private UiModel model;
+    private UpdateManager updates;
+    private AlertDialog updateDialog;
+    private static final int UPDATE_PERMISSION = 910, UPDATE_INSTALL = 911;
     private AppearanceController appearance;
     private UiKit ui;
     private LinearLayout root;
@@ -93,6 +99,7 @@ public final class MainActivity extends Activity {
 
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
+        updates = UpdateManager.get(this);
         model=getLastNonConfigurationInstance() instanceof UiModel?(UiModel)getLastNonConfigurationInstance():new UiModel(this);
         model.attach(this); appearance=new AppearanceController(this);
         if (state!=null) {
@@ -139,8 +146,26 @@ public final class MainActivity extends Activity {
         model.reloadConfig();
         render();
     }
-    @Override protected void onResume(){super.onResume();resumed=true;model.deliverPending();main.post(statusRefresh);}
-    @Override protected void onPause(){resumed=false;super.onPause();}
+    @Override protected void onResume(){
+        super.onResume();resumed=true;model.deliverPending();main.post(statusRefresh);updates.attach(this);
+        if(updates.awaitingPermission())resumeUpdatePermission();
+        updates.automaticCheck();
+    }
+    @Override protected void onPause(){
+        resumed=false;updates.detach(this);if(updateDialog!=null){updateDialog.dismiss();updateDialog=null;}super.onPause();
+    }
+    @Override protected void onActivityResult(int request,int result,Intent data){
+        super.onActivityResult(request,result,data);
+        if(request==UPDATE_PERMISSION&&updates.awaitingPermission()){
+            // Result can arrive before onResume; installation is delivered only once visible.
+            resumeUpdatePermission();
+        }
+    }
+    private void resumeUpdatePermission(){
+        updates.awaitingPermission(false);
+        if(getPackageManager().canRequestPackageInstalls())updates.installReady();
+        else updates.message("安装权限未开启","已保留下载的安装包。可在“关于”页再次选择安装并开启权限。");
+    }
     @Override protected void onStop(){
         visible=false;main.removeCallbacks(statusRefresh);
         if(statusRegistered){getContentResolver().unregisterContentObserver(statusObserver);getContentResolver().unregisterContentObserver(configObserver);statusRegistered=false;}
@@ -424,10 +449,43 @@ public final class MainActivity extends Activity {
     }
     private void renderAbout(LinearLayout host){
         LinearLayout content=scrollContent(host);LiquidGlassLayout device=ui.preferenceCard();TextView heading=ui.text("当前版本",UiKit.TextRole.CAPTION);heading.setTextColor(ui.palette.accent);heading.setPadding(0,ui.dp(12),0,ui.dp(4));device.addView(heading);device.addView(ui.valueRow("IQOO肩键扩展",BuildConfig.VERSION_NAME));device.addView(ui.valueRow("版本代码",String.valueOf(BuildConfig.VERSION_CODE)));device.addView(ui.valueRow("适配设备","iQOO 15 Ultra"));device.addView(ui.valueRow("目标游戏魔盒",Constants.CUBE_VERSION));content.addView(device);
-        LiquidGlassLayout guide=ui.preferenceCard();guide.addView(ui.actionRow(GlassIcon.Kind.INFO,"使用说明与支持范围","通过原生游戏侧边栏配置肩键",this::help));ui.divider(guide);guide.addView(ui.actionRow(GlassIcon.Kind.SHIELD,"隐私与本地运行","无联网权限 · 无统计 SDK · 无账号",this::privacyHelp));content.addView(guide);
+        LiquidGlassLayout updateCard=ui.preferenceCard();LinearLayout updateRow=ui.actionRow(GlassIcon.Kind.REFRESH,"检查更新",updates.status(),()->updates.check(true));updateRow.setEnabled(!updates.busy()||!updates.downloading());updateRow.setAlpha(updateRow.isEnabled()?1f:.55f);updateCard.addView(updateRow);
+        if(updates.downloading()){ui.divider(updateCard);updateCard.addView(ui.actionRow(GlassIcon.Kind.INFO,"取消下载","已下载的完整版本会保留",updates::cancelDownload));}
+        else if(updates.hasReady()){ui.divider(updateCard);LinearLayout install=ui.actionRow(GlassIcon.Kind.INFO,"安装已下载版本","校验后打开系统安装界面",updates::installReady);install.setEnabled(!updates.busy());updateCard.addView(install);}content.addView(updateCard);
+        LiquidGlassLayout guide=ui.preferenceCard();guide.addView(ui.actionRow(GlassIcon.Kind.INFO,"使用说明与支持范围","通过原生游戏侧边栏配置肩键",this::help));ui.divider(guide);guide.addView(ui.actionRow(GlassIcon.Kind.SHIELD,"隐私与本地运行","仅更新时联网 · 无统计 SDK · 无账号",this::privacyHelp));content.addView(guide);
         TextView footnote=ui.text("按应用与空间分别管理 · 原生肩键准入扩展",UiKit.TextRole.CAPTION);footnote.setGravity(Gravity.CENTER);footnote.setPadding(ui.dp(8),ui.dp(12),ui.dp(8),ui.dp(12));content.addView(footnote);
     }
-    private void privacyHelp(){ui.dialog().setTitle("隐私与本地运行").setMessage("应用无联网权限、无统计 SDK、无账号登录。\n\nRoot 仅按你确认的空间读取第三方应用。工作、私密及其他空间默认不选；设备信息刷新不读取应用列表。\n\n总开关关闭后停止前台观察，只保留配置变更通知与进程存活连接；没有周期续期。已开启的肩键由原厂生命周期关闭。\n\n诊断仅复制脱敏摘要，不含应用名称、包名、空间标识或前台记录。").setPositiveButton("知道了",null).show();}
+    private void privacyHelp(){ui.dialog().setTitle("隐私与本地运行").setMessage("应用仅检查和下载更新时连接 GitHub，无统计 SDK、无账号登录。每天首次打开应用时自动检查一次，无新版或检查失败不提示；也可在“关于”页手动检查。新版本需你确认下载及系统安装。请求不附带应用列表、空间、Root 状态或设备标识；GitHub 服务会接收到连接的网络信息。\n\nRoot 仅按你确认的空间读取第三方应用。工作、私密及其他空间默认不选；设备信息刷新不读取应用列表。\n\n总开关关闭后停止前台观察，只保留配置变更通知与进程存活连接；没有周期续期。已开启的肩键由原厂生命周期关闭。\n\n诊断仅复制脱敏摘要，不含应用名称、包名、空间标识或前台记录。").setPositiveButton("知道了",null).show();}
+    @Override public void updateChanged(){if(visible&&ABOUT.equals(page))render();}
+    @Override public void offerUpdate(UpdateRelease release){
+        if(!canShowDialogs()||(updateDialog!=null&&updateDialog.isShowing()))return;
+        updateDialog=ui.dialog().setTitle("发现新版本 "+release.versionName)
+            .setMessage("当前版本："+BuildConfig.VERSION_NAME+"\n安装包："+String.format(Locale.CHINA,"%.1f MB",release.size/1048576.0)+"\n\n"+(release.notes.isEmpty()?"此版本未提供更新说明。":release.notes))
+            .setNegativeButton("暂不更新",(dialog,which)->updates.dismissOffer())
+            .setPositiveButton(updates.isReady(release)?"安装更新":"下载更新",(dialog,which)->{updates.dismissOffer();updates.download(release);}).create();
+        updateDialog.setOnCancelListener(dialog->updates.dismissOffer());updateDialog.show();
+    }
+    @Override public void updateMessage(String title,String message){
+        if(!canShowDialogs())return;if(updateDialog!=null)updateDialog.dismiss();
+        updateDialog=ui.dialog().setTitle(title).setMessage(message).setPositiveButton("知道了",null).show();
+    }
+    @Override public void installUpdate(Uri uri){
+        if(!canShowDialogs())return;
+        if(!getPackageManager().canRequestPackageInstalls()){
+            updateDialog=ui.dialog().setTitle("允许安装更新")
+                .setMessage("安装包已通过校验。请在系统设置中允许 IQOO肩键扩展安装应用，返回后将打开系统安装界面。")
+                .setNegativeButton("取消",null).setPositiveButton("前往设置",(dialog,which)->{
+                    try{updates.awaitingPermission(true);startActivityForResult(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+getPackageName())),UPDATE_PERMISSION);}
+                    catch(Exception e){updates.awaitingPermission(false);updates.message("无法打开安装权限设置","请在系统设置中允许本应用安装未知来源应用，再从“关于”页安装。");}
+                }).show();return;
+        }
+        try{
+            Intent intent=new Intent(Intent.ACTION_VIEW).setDataAndType(uri,"application/vnd.android.package-archive")
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.setClipData(ClipData.newRawUri("更新安装包",uri));
+            startActivityForResult(intent,UPDATE_INSTALL);
+        }catch(Exception e){updates.message("无法打开安装界面","安装包已保留，请稍后从“关于”页重试。");}
+    }
     private boolean ensureReady(){String reason=enableBlocker();if(reason.isEmpty())return true;showError("暂不能开启",reason);return false;}
     private String enableBlocker(){
         if(!model.configError.isEmpty())return model.configError;if(model.loading||model.saving)return "正在处理当前操作，请勿重复提交。";
