@@ -24,7 +24,7 @@ def main():
     assert description and description.group(1) == '扩展iQOO 15Ultra肩键支持应用范围', 'Wrong packaged LSPosed description'
     signatures = sdk_output(args.build_tools, 'apksigner', 'verify', '--verbose', '--print-certs', args.apk)
     alignment = sdk_output(args.build_tools, 'zipalign', '-c', '-P', '16', '-v', '4', args.apk)
-    assert "package: name='ls.iqooaugment.com' versionCode='10011' versionName='0.1.0-alpha11'" in badging
+    assert "package: name='ls.iqooaugment.com' versionCode='10012' versionName='0.1.0-alpha12'" in badging
     assert 'application-debuggable' not in badging
     declared_permissions=set(re.findall(r"uses-permission: name='([^']+)'", permissions))
     assert declared_permissions=={'android.permission.INTERNET','android.permission.REQUEST_INSTALL_PACKAGES'},declared_permissions
@@ -53,8 +53,8 @@ def main():
         assert 'Lls/iqooaugment/com/update/UpdateManager;' in definitions
         assert 'Lls/iqooaugment/com/update/UpdateApkProvider;' in definitions
         assert not any(part in '\n'.join(dex.types) for part in ('Ljava/net/Socket;', 'Landroid/webkit/WebView;'))
-    result = {'apk': args.apk.name, 'package': 'ls.iqooaugment.com', 'version_name': '0.1.0-alpha11',
-        'version_code': 10011, 'bytes': args.apk.stat().st_size, 'sha256': hashlib.sha256(args.apk.read_bytes()).hexdigest(),
+    result = {'apk': args.apk.name, 'package': 'ls.iqooaugment.com', 'version_name': '0.1.0-alpha12',
+        'version_code': 10012, 'bytes': args.apk.stat().st_size, 'sha256': hashlib.sha256(args.apk.read_bytes()).hexdigest(),
         'module_description': description.group(1), 'packaged_description_check': 'PASS',
         'declared_permissions': sorted(declared_permissions), 'manifest_check': 'PASS', 'signature_v2': 'PASS',
         'signer_sha256': cert, 'previous_signer_matches': previous_cert == cert if previous_cert else None,

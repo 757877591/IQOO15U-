@@ -101,7 +101,9 @@ class Dex:
             byte=self.data[off];off+=1;value|=(byte&127)<<shift
             if byte<128:return value,off
         raise ValueError('Invalid ULEB128')
-    def definitions(self):
+    def definitions(self, methods=None, fields=None):
+        methods = METHODS if methods is None else methods
+        fields = FIELDS if fields is None else fields
         found=[]
         for i in range(self.u4(96)):
             off=self.u4(100)+i*32;cursor=self.u4(off+24)
@@ -115,10 +117,10 @@ class Dex:
                     access,cursor=self.uleb(cursor)
                     if group<2:
                         sig=self.fields[index]
-                        if sig in FIELDS:found.append({'kind':'field','signature':sig,'access':access})
+                        if sig in fields:found.append({'kind':'field','signature':sig,'access':access})
                     else:
                         code,cursor=self.uleb(cursor);sig=self.methods[index]
-                        if sig in METHODS:found.append({'kind':'method','signature':sig,'access':access,'code_offset':code,'has_code':code>0,
+                        if sig in methods:found.append({'kind':'method','signature':sig,'access':access,'code_offset':code,'has_code':code>0,
                             'instruction_sha256':hashlib.sha256(self.data[code+16:code+16+self.u4(code+12)*2]).hexdigest() if code else None})
         return found
 
@@ -126,6 +128,15 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('apk',type=Path);parser.add_argument('--output',type=Path)
     args=parser.parse_args();sha=hashlib.sha256(args.apk.read_bytes()).hexdigest();records=[];contracts=[]
+    if sha == 'c276f2db9e4e70829d9dd7250cd1d84413f39ebdf451fe10157f94288a9dbb26':
+        from verify_target_v15 import verify
+        result = verify(args.apk)
+        text = json.dumps(result, ensure_ascii=False, indent=2)
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(text+'\n', encoding='utf-8')
+        print(text)
+        raise SystemExit(0 if result['pass'] else 1)
     with zipfile.ZipFile(args.apk) as apk:
         dex_files=sorted(n for n in apk.namelist() if n.startswith('classes') and n.endswith('.dex') and '/' not in n)
         for name in dex_files:

@@ -12,12 +12,12 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import ls.iqooaugment.com.core.NativeCategoryScope;
+import ls.iqooaugment.com.core.GameCubeVersion;
 
-/** Exact 1401600 native eligibility/category adapter. All shoulder operations remain OEM-owned. */
+/** Version-selected native eligibility/category adapter. All shoulder operations remain OEM-owned. */
 final class AssistantHooks {
     private static final String BASE = "com.vivo.gameassistant.inputbuttons.gameshoulder.";
     private static final String K = BASE + "utils.k";
-    private static final String E0 = "com.vivo.gameassistant.utils.e0";
     private static final String DETAILS = BASE + "entity.GameShoulderDetailsEntity";
     private static final String ITEM = "com.vivo.gameassistant.homegui.sideslide.controlcenter.switches.model.j";
     private static final String ITEM_TYPE = "com.vivo.gameassistant.homegui.sideslide.controlcenter.switches.model.QuickSwitchItemType";
@@ -25,6 +25,7 @@ final class AssistantHooks {
     private final Context context;
     private final ClassLoader loader;
     private final BridgeClient bridge;
+    private final GameCubeVersion version;
     private final Handler main = new Handler(Looper.getMainLooper());
     private final TaskWatcher watcher = new TaskWatcher();
     private final SelectedEligibility eligibility;
@@ -35,8 +36,8 @@ final class AssistantHooks {
     private Method nativeIsWang;
     private final Runnable foregroundChanged;
 
-    AssistantHooks(Context context, ClassLoader loader, BridgeClient bridge) {
-        this.context = context; this.loader = loader; this.bridge = bridge;
+    AssistantHooks(Context context, ClassLoader loader, BridgeClient bridge, GameCubeVersion version) {
+        this.context = context; this.loader = loader; this.bridge = bridge; this.version = version;
         foregroundChanged = () -> refreshGeneric(null, this.context);
         eligibility = new SelectedEligibility(context, bridge,
             () -> installed && watcher.isRunning());
@@ -77,14 +78,18 @@ final class AssistantHooks {
         if (type(owner).getDeclaredField(name).getType() != expected) throw new NoSuchFieldException(owner + "." + name);
     }
     private void validateContract() throws Exception {
-        nativeIsWang = method(E0, "c1", boolean.class, String.class);
-        field("be.a", "d", String.class); field("be.a", "c", Context.class);
-        field("ce.i0", "b", type(BASE + "IGameShoulderContract$IPresenter"));
-        field(BASE + "view.GameShoulderSettingsView", "T", type("ce.i0"));
-        field(BASE + "view.GameShoulderSettingsView", "R", String.class);
-        field(BASE + "view.GameShoulderPreferencesView", "N", type(BASE + "IGameShoulderContract$IMainView"));
+        nativeIsWang = method(version.gameUtils, version.specialGame, boolean.class, String.class);
+        field(version.presenter, "d", String.class); field(version.presenter, "c", Context.class);
+        field(version.viewManager, "b", type(BASE + "IGameShoulderContract$IPresenter"));
+        field(BASE + "view.GameShoulderSettingsView", version.settingsPresenter, type(version.viewManager));
+        field(BASE + "view.GameShoulderSettingsView", version.settingsPackage, String.class);
+        field(BASE + "view.GameShoulderPreferencesView", version.preferencesParent, type(BASE + "IGameShoulderContract$IMainView"));
         field(BASE + "view.GameShoulderUserGuideView", "A", type(BASE + "IGameShoulderContract$IMainView"));
-        method("com.vivo.common.a", "O0", boolean.class);
+        method("com.vivo.common.a", version.capabilityInstance, type("com.vivo.common.a"));
+        method("com.vivo.common.a", version.shoulderHardware, boolean.class);
+        method(version.assistantManager, "V", type(version.assistantManager));
+        method(version.assistantManager, version.foregroundPackage, String.class);
+        method(ITEM, version.itemType, type(ITEM_TYPE));
     }
     private void invalidate() { eligibility.invalidate(); genericCached = null; }
     private void configurationChanged() {
@@ -99,7 +104,7 @@ final class AssistantHooks {
     }
     private boolean hardware() {
         try { return Boolean.TRUE.equals(XposedHelpers.callMethod(
-            XposedHelpers.callStaticMethod(type("com.vivo.common.a"), "p"), "O0")); }
+            XposedHelpers.callStaticMethod(type("com.vivo.common.a"), version.capabilityInstance), version.shoulderHardware)); }
         catch (Throwable ignored) { return false; }
     }
     private boolean genericSafe(SelectedEligibility.Selection selected, Context nativeContext) {
@@ -143,7 +148,7 @@ final class AssistantHooks {
         hook(method(ITEM, "C", void.class, int.class, float.class), new XC_MethodHook() {
             @Override protected void beforeHookedMethod(MethodHookParam param) {
                 try {
-                    if (XposedHelpers.callMethod(param.thisObject, "n") != XposedHelpers.getStaticObjectField(type(ITEM_TYPE), "GAME_SHOULDER")) return;
+                    if (XposedHelpers.callMethod(param.thisObject, version.itemType) != XposedHelpers.getStaticObjectField(type(ITEM_TYPE), "GAME_SHOULDER")) return;
                     String pkg = nativePackage();
                     if (refreshGeneric(pkg, context) != null) param.args[0] = 1;
                 } catch (Throwable ignored) { }
@@ -151,10 +156,10 @@ final class AssistantHooks {
         });
     }
     private String nativePackage() {
-        return (String) XposedHelpers.callMethod(XposedHelpers.callStaticMethod(type("com.vivo.gameassistant.p"), "V"), "O0");
+        return (String) XposedHelpers.callMethod(XposedHelpers.callStaticMethod(type(version.assistantManager), "V"), version.foregroundPackage);
     }
     private void installForegroundObservation() throws Exception {
-        hook(method("be.a", "handleGameForeground", void.class, boolean.class), new XC_MethodHook() {
+        hook(method(version.presenter, "handleGameForeground", void.class, boolean.class), new XC_MethodHook() {
             @Override protected void beforeHookedMethod(MethodHookParam param) {
                 invalidate();
                 if (Boolean.TRUE.equals(param.args[0])) {
@@ -169,7 +174,7 @@ final class AssistantHooks {
     private Object presenter(Object receiver, String path) {
         Object value = receiver;
         if (!path.isEmpty()) for (String name : path.split("\\.")) value = XposedHelpers.getObjectField(value, name);
-        return type("be.a").isInstance(value) ? value : null;
+        return type(version.presenter).isInstance(value) ? value : null;
     }
     private void allow(String owner, String name, String path, boolean inputOnly, Class<?>... args) throws Exception {
         hook(method(owner, name, void.class, args), new XC_MethodHook() {
@@ -180,7 +185,7 @@ final class AssistantHooks {
                     if (nativePresenter != null) {
                         String pkg = (String) XposedHelpers.getObjectField(nativePresenter, "d");
                         boolean matchesView = !owner.endsWith("GameShoulderSettingsView")
-                            || pkg != null && pkg.equals(XposedHelpers.getObjectField(param.thisObject, "R"));
+                            || pkg != null && pkg.equals(XposedHelpers.getObjectField(param.thisObject, version.settingsPackage));
                         if (matchesView) selected = inputOnly || category.cacheOnly() ? cachedGeneric(pkg) : refreshGeneric(pkg,
                             (Context) XposedHelpers.getObjectField(nativePresenter, "c"));
                     }
@@ -203,23 +208,27 @@ final class AssistantHooks {
         });
     }
     private void installCategoryScopes() throws Exception {
-        // Exact single-purpose c1 callers. These scopes never change arguments/results of OEM operations.
-        allow("be.a", "m", "", false, int.class, boolean.class);
-        allow("be.a", "u", "", false, type(DETAILS));
-        allow(BASE + "view.GameShoulderSettingsView", "X0", "T.b", false);
-        allow(BASE + "view.GameShoulderSettingsView", "c1", "T.b", false);
-        allow(BASE + "view.GameShoulderPreferencesView", "x0", "N.T.b", false);
-        allow(BASE + "view.GameShoulderUserGuideView", "A0", "A.T.b", false);
+        // Exact single-purpose category callers. OEM operation arguments/results remain unchanged.
+        String settingsPath = version.settingsPresenter + ".b";
+        allow(version.presenter, version.driverCategory, "", false, int.class, boolean.class);
+        allow(version.presenter, version.sdkCategory, "", false, type(DETAILS));
+        allow(BASE + "view.GameShoulderSettingsView", version.settingsInit, settingsPath, false);
+        allow(BASE + "view.GameShoulderSettingsView", version.settingsScheme, settingsPath, false);
+        allow(BASE + "view.GameShoulderPreferencesView", version.preferencesInit, version.preferencesParent + "." + settingsPath, false);
+        allow(BASE + "view.GameShoulderUserGuideView", version.guideInit, "A." + settingsPath, false);
         // Two native visual category checks. Cached identity only: no foreground/Settings/Provider IPC per press.
-        allow("be.a", "h", "", true, InputEvent.class, int.class);
-        allow("ce.i0", "processPressAnim", "b", true, InputEvent.class, boolean.class, int.class, boolean.class, boolean.class, int.class);
-        // All other direct c1 callers in this exact DEX retain their original game classification.
+        allow(version.presenter, version.inputCategory, "", true, InputEvent.class, int.class);
+        allow(version.viewManager, "processPressAnim", "b", true, InputEvent.class, boolean.class, int.class, boolean.class, boolean.class, int.class);
+        // All other direct category callers in each audited DEX retain their original classification.
         barrier(method(K, "q", boolean.class, String.class));
         barrier(method(BASE + "utils.l", "a", java.util.HashMap.class, Context.class, boolean.class));
-        barrier(method(E0, "V0", boolean.class, Context.class));
-        barrier(method("mc.b", "h", void.class, Context.class, type("android.multidisplay.MultiDisplayManager"),
-            type("com.vivo.gameassistant.utils.u"), boolean.class, boolean.class, List.class, List.class));
-        barrier(method("nb.h", "l", void.class, int.class, int.class, int.class, int.class,
+        barrier(method(version.gameUtils, version.reviewCategory, boolean.class, Context.class));
+        List<Class<?>> switchArgs = new ArrayList<>(java.util.Arrays.asList(Context.class,
+            type("android.multidisplay.MultiDisplayManager"), type(version.switchHelper),
+            boolean.class, boolean.class, List.class, List.class));
+        if (version == GameCubeVersion.V15) switchArgs.add(type("gi.b"));
+        barrier(method(version.switchBuilder, "h", void.class, switchArgs.toArray(new Class<?>[0])));
+        barrier(method(version.interpolation, version.interpolationCategory, void.class, int.class, int.class, int.class, int.class,
             type("com.vivo.gameassistant.frameinterpolation.FrameInterpolationState")));
         barrier(method(BASE + "a", "onGameSdkEvent", void.class, type("com.vivo.gameassistant.entity.GameSDKEvent")));
         hook(nativeIsWang, new XC_MethodHook() {

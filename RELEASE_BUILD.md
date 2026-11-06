@@ -57,7 +57,7 @@ Linux/macOS：
 bash release.sh
 ```
 
-发布脚本执行 Release 组装与 Lint，检查签名、对齐、包名及 Xposed 入口后，将 APK 输出到 `dist/IQOOShoulderExtension-v0.1.0-alpha11-release.apk`。`dist/`、`.build-tools/`、`.signing/` 和本地生成文件均不提交到仓库。
+发布脚本执行 Release 组装与 Lint，检查签名、对齐、包名及 Xposed 入口后，将 APK 输出到 `dist/IQOOShoulderExtension-v<versionName>-release.apk`。`dist/`、`.build-tools/`、`.signing/` 和本地生成文件均不提交到仓库。
 
 ## 发布到 lispacerelease
 
@@ -68,7 +68,7 @@ bash release.sh
 3. 首次克隆发布仓库；已有仓库时同步 `main`，并准备 UTF-8 更新说明文件。发布工具需要 Python 3.11+、JDK 和 Android SDK Build-Tools。
 4. 使用 `--app iqoo-shoulder` 做离线预检查，核对发布计划后用相同参数正式发布。
 
-以下以**待构建的下一版** `0.1.0-alpha12 / 10012` 为例，路径需改成自己的实际位置。首次准备发布仓库：
+以下以 `0.1.0-alpha12 / 10012` 为例，路径与版本需改成实际发布目标。首次准备发布仓库：
 
 ```powershell
 git clone https://github.com/liligit1815/lispacerelease.git "C:\Projects\lispacerelease"
@@ -102,7 +102,7 @@ git -C $ReleaseRepo pull --ff-only
 
 每个软件只有一个通道，alpha/test 版本只要被推进清单，也会成为客户端候选更新。网络中断后用相同 APK、更新说明和参数重试；若最后响应丢失，先检查公开清单，避免把已成功发布误判为失败。不要以同一个 `versionCode` 替换已公开 APK。发布记录保存到发布仓库忽略的 `out/published/`，下次预检查前再次同步本地清单。
 
-## 更新清单示例与约束
+## 更新清单约束
 
 应用固定读取：
 
@@ -110,7 +110,7 @@ git -C $ReleaseRepo pull --ff-only
 https://raw.githubusercontent.com/liligit1815/lispacerelease/main/updates/iqoo-shoulder.json
 ```
 
-[examples/iqoo-shoulder.json](examples/iqoo-shoulder.json) 是已发布 `0.1.0-alpha11 / 10011` 的完整合法示例。时间、大小、文件哈希和证书指纹均对应该版实际 APK；它是格式参考，不应复制成下一版的正式清单。正式数据由 `tools/publish.py` 自动生成。
+正式清单由 `tools/publish.py` 从最终 APK 自动生成，不在源码仓库保存旧版本清单副本。
 
 | 字段 | 要求 |
 |---|---|
@@ -134,7 +134,7 @@ https://raw.githubusercontent.com/liligit1815/lispacerelease/main/updates/iqoo-s
 
 ## 发布后验证
 
-`tools/validate.py` 只验证本地清单结构，不会检查公开下载或 Android 安装。正式发布后先运行上述同步与验证，再检查公开链路。在同一 PowerShell 窗口执行，`$ExpectedVersionCode` 填本次实际发布的版本代码；核验现有 alpha11 时填写 `10011`：
+`tools/validate.py` 只验证本地清单结构，不会检查公开下载或 Android 安装。正式发布后先运行上述同步与验证，再检查公开链路。在同一 PowerShell 窗口执行，`$ExpectedVersionCode` 填本次实际发布的版本代码：
 
 ```powershell
 $ErrorActionPreference = "Stop"
@@ -176,4 +176,4 @@ if ($LASTEXITCODE -ne 0) { throw "APK 元数据读取失败" }
 2. 确认下载，核对进度和取消行为；重新下载后，验证未知来源授权返回、系统覆盖安装和安装后的版本。取消安装时应能从“关于”页重试已下载版本。
 3. 检查旋转屏幕、切到后台再回前台，以及无网络时的提示。当前版本等于清单版本时，应提示“当前已是最新版本”。
 
-`10010` 及更早版本没有在线更新功能，需要先手动安装 [alpha11 / 10011](https://github.com/liligit1815/lispacerelease/releases/tag/iqoo-shoulder-v10011) 或后续保留更新功能的版本。现有线上版本为 `10011` 时，已安装 `10011` 不会收到升级提示；真正的在线升级安装需等后续更高版本并在设备上验证。
+`10010` 及更早版本没有在线更新功能，需要先手动安装 [alpha11 / 10011](https://github.com/liligit1815/lispacerelease/releases/tag/iqoo-shoulder-v10011) 或后续版本。客户端仅在清单版本代码高于已安装版本时提示升级。

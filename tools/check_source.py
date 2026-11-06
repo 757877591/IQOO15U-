@@ -49,8 +49,8 @@ def main():
     assert "namespace 'ls.iqooaugment.com'" in gradle
     assert "applicationId 'ls.iqooaugment.com'" in gradle
     assert 'debuggable false' in gradle
-    assert 'versionCode 10011' in gradle
-    assert "versionName '0.1.0-alpha11'" in gradle
+    assert 'versionCode 10012' in gradle
+    assert "versionName '0.1.0-alpha12'" in gradle
     assert 'enableV2Signing true' in gradle
     assert manifest.find('application/provider').attrib[NS+'authorities']=='${applicationId}.config'
     assert '"ls.iqooaugment.com"' in (BASE/'Constants.java').read_text(encoding='utf-8')

@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import ls.iqooaugment.com.Constants;
 import ls.iqooaugment.com.core.AdmissionPolicy;
+import ls.iqooaugment.com.core.GameCubeVersion;
 import ls.iqooaugment.com.data.Config;
 
 /** Extends native admission only; never invokes or owns the native foreground lifecycle. */
@@ -46,17 +47,18 @@ public final class ShoulderHook implements IXposedHookLoadPackage {
         try {
             PackageInfo pi = context.getPackageManager().getPackageInfo(Constants.CUBE, 0);
             bridge.set("version", pi.versionName + "/" + pi.getLongVersionCode());
-            if (pi.getLongVersionCode() != Constants.CUBE_CODE || !Constants.CUBE_VERSION.equals(pi.versionName))
+            GameCubeVersion version = GameCubeVersion.find(pi.versionName, pi.getLongVersionCode());
+            if (version == null)
                 throw new IllegalStateException("游戏魔盒版本不匹配；未安装扩展 Hook");
             ClassLoader cl = context.getClassLoader();
-            Object cap = XposedHelpers.callStaticMethod(XposedHelpers.findClass("com.vivo.common.a", cl), "p");
-            boolean hardware = Boolean.TRUE.equals(XposedHelpers.callMethod(cap, "O0"));
+            Object cap = XposedHelpers.callStaticMethod(XposedHelpers.findClass("com.vivo.common.a", cl), version.capabilityInstance);
+            boolean hardware = Boolean.TRUE.equals(XposedHelpers.callMethod(cap, version.shoulderHardware));
             bridge.set("hardware", hardware);
             if (!hardware) throw new IllegalStateException("系统未报告原生肩键硬件能力");
             if (process.endsWith(":daemon")) {
-                installDaemon(cl);
+                if (version == GameCubeVersion.V15) installDaemon15(cl); else installDaemon(cl);
                 bridge.onConfigChanged(eligibility::invalidate);
-            } else new AssistantHooks(context, cl, bridge).install();
+            } else new AssistantHooks(context, cl, bridge, version).install();
             ready = true;
             bridge.set("ready", true);
             bridge.set("message", "原厂菜单准入已安装；输入与关闭由原厂处理，未做真机验证");
@@ -66,6 +68,33 @@ public final class ShoulderHook implements IXposedHookLoadPackage {
             bridge.set("ready", false); bridge.set("message", error.toString());
             log("Disabled " + process + ": " + error.getClass().getSimpleName());
         } finally { bridge.start(); }
+    }
+    private void installDaemon15(ClassLoader cl) throws Exception {
+        Class<?> daemon = XposedHelpers.findClass("com.vivo.gamedaemon.h", cl);
+        // 1500701 passes the native support list into onTopActivityChange instead of reading it there.
+        Method top = daemon.getDeclaredMethod("v0", List.class, boolean.class, int.class, String.class, boolean.class);
+        if (top.getReturnType() != void.class || daemon.getDeclaredField("b").getType() != String.class)
+            throw new IllegalStateException("h.v0/b signature mismatch");
+        XposedBridge.hookMethod(top, new XC_MethodHook() {
+            @Override protected void beforeHookedMethod(MethodHookParam param) {
+                bridge.onLifecycleEvent();
+                if (!ready || !bridge.current().master || !bridge.assistantReady()) return;
+                try {
+                    String pkg = (String) XposedHelpers.getObjectField(param.thisObject, "b");
+                    if (pkg == null || pkg.isEmpty() || !(param.args[0] instanceof List<?>)) return;
+                    SelectedEligibility.Selection selected = eligibility.resolve(pkg);
+                    if (!eligibility.valid(selected) || !bridge.assistantReady()) return;
+                    List<?> raw = (List<?>) param.args[0];
+                    for (Object item : raw) if (!(item instanceof String)) return;
+                    @SuppressWarnings("unchecked") List<String> original = (List<String>) raw;
+                    Config config = selected.config;
+                    List<String> result = AdmissionPolicy.extend(original, selected.key, config.enabled, config.master, true);
+                    if (result != original && eligibility.valid(selected)) param.args[0] = result;
+                    // Only this invocation receives a copy. Original flags, old package/PID and lifecycle execute intact.
+                } catch (Throwable ignored) { }
+            }
+        });
+        bridge.set("admissionHook", true);
     }
     private void installDaemon(ClassLoader cl) throws Exception {
         Class<?> listClass = XposedHelpers.findClass("com.vivo.gamedaemon.i0", cl);

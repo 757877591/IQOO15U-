@@ -2,7 +2,7 @@
 
 为具有原生肩键硬件的 iQOO 15 Ultra 扩展应用支持范围。
 
-当前版本：`0.1.0-alpha11 / 10011`。包名：`ls.iqooaugment.com`。适配游戏魔盒：`14.0.16.00_de / 1401600`。
+当前源码版本：`0.1.0-alpha12 / 10012`。包名：`ls.iqooaugment.com`。适配游戏魔盒：`14.0.16.00_de / 1401600`、`15.0.07.01_de / 1500701`。两版按完整版本名和版本代码分别选择接口，未知版本不启用扩展。已发行安装包以发布仓库为准。
 
 ## 功能
 
@@ -33,9 +33,9 @@ APK 声明联网与请求安装应用权限，仅检查和下载更新时连接 
 
 发布入口为 [lispacerelease 仓库](https://github.com/liligit1815/lispacerelease)，本软件固定使用 `--app iqoo-shoulder` 和 `updates/iqoo-shoulder.json`。源码继续保存在本项目中，更新仓库只保存发布信息与 APK 附件。
 
-完整的构建到发布步骤、清单字段说明和发布后验证命令见 [RELEASE_BUILD.md 的发布章节](RELEASE_BUILD.md#发布到-lispacerelease)。合法清单示例见 [examples/iqoo-shoulder.json](examples/iqoo-shoulder.json)，示例对应已发布的 `10011`，正式清单由发布工具生成。
+完整的构建到发布步骤、清单字段说明和发布后验证命令见 [RELEASE_BUILD.md 的发布章节](RELEASE_BUILD.md#发布到-lispacerelease)。正式清单由发布工具根据最终 APK 生成。
 
-1. 在 `app/build.gradle` 递增 `versionCode`，并更新 `versionName`、更新记录及相关版本检查的预期值。版本代码必须大于远端清单中的当前值；目前为 `10011`，下一版可使用 `10012 / 0.1.0-alpha12`。更新检测按 `versionCode` 比较，不能只改显示版本或 APK 文件名。
+1. 在 `app/build.gradle` 递增 `versionCode`，并更新 `versionName`、更新记录及相关版本检查的预期值。版本代码必须大于远端清单中的当前值；本地适配版为 `10012 / 0.1.0-alpha12`，下一版可使用 `10013 / 0.1.0-alpha13`。正式发布前读取远端清单确认，不能把本地构建视为已发布。更新检测按 `versionCode` 比较，不能只改显示版本或 APK 文件名。
 2. 保持包名 `ls.iqooaugment.com`、现有发行签名及固定更新源。按 [RELEASE_BUILD.md](RELEASE_BUILD.md) 配置原签名材料，使用 `release.ps1`（Linux/macOS 使用 `release.sh`）构建已签名 Release APK。不要用 Debug 包或重新生成签名替换既有发行密钥。
 3. 将本版更新说明保存为 UTF-8 `.md` 或 `.txt` 文件，说明变更内容和必要的使用注意事项，最多 12000 个字符。
 4. 同步本地更新仓库，先执行发布工具的 `--dry-run`，确认软件、实际 APK 版本、签名、文件大小及更新说明；检查通过后使用相同参数去掉 `--dry-run` 正式发布。
@@ -50,7 +50,7 @@ APK 声明联网与请求安装应用权限，仅检查和下载更新时连接 
 
 旧版 `0.1.0-alpha10 / 10010` 及更早版本没有在线更新入口，首次需手动覆盖安装 [首个在线更新版本 0.1.0-alpha11 / 10011](https://github.com/liligit1815/lispacerelease/releases/tag/iqoo-shoulder-v10011)，或后续保留更新功能的版本；之后才可通过“关于”页检查更新或前台自动检查（24 小时内最多一次）。
 
-已安装版本与清单版本相同时，应显示“当前已是最新版本”。公开清单读取、下载、文件哈希和发行签名已通过主机校验；设备上的更新界面和系统覆盖安装仍待真机验证。
+已安装版本与清单版本相同时，显示“当前已是最新版本”。
 
 ## 源码
 

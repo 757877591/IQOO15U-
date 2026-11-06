@@ -50,7 +50,7 @@ public final class Catalog {
         cubeVersion = j.has("cubeVersion") ? JsonSafety.string(j.opt("cubeVersion"), "cubeVersion", 256) : "未安装";
         cubeCode = JsonSafety.integer(j.opt("cubeCode"), "cubeCode", -1, Long.MAX_VALUE);
         appsRead = JsonSafety.bool(j.opt("appsRead"), "appsRead");
-        compatible = cubeCode == Constants.CUBE_CODE && Constants.CUBE_VERSION.equals(cubeVersion);
+        compatible = ls.iqooaugment.com.core.GameCubeVersion.find(cubeVersion, cubeCode) != null;
         JSONArray users = j.getJSONArray("users");
         if (users.length() > ScanPolicy.MAX_SPACES) throw new JSONException("Too many spaces");
         List<Space> parsedSpaces = new ArrayList<>();

@@ -1,0 +1,113 @@
+{
+  "version_name": "15.0.07.01_de",
+  "version_code": 1500701,
+  "sha256": "c276f2db9e4e70829d9dd7250cd1d84413f39ebdf451fe10157f94288a9dbb26",
+  "methods": {
+    "Lcom/vivo/common/a;->e1()Z": "242e3bbeb7b2164f9025fe38ccca69a235144102887b02eb018477383791eb19",
+    "Lcom/vivo/common/a;->q()Lcom/vivo/common/a;": "a90d5af9c560831458aa47bcff6f70c0e2c857c32d6033eff917a38234f4d978",
+    "Lcom/vivo/common/utils/m;->p3(Landroid/content/Context;IZ)V": "73a329e1cac021dab13d3f199556eeab5b2bd0f4ffd77137d09da95dec98546a",
+    "Lcom/vivo/common/utils/m;->q3(Landroid/content/Context;IZ)V": "8b1189e5b0057d2d21422a27d93cf4424e8570a0a0ae846ecd32a4130c3e7ba3",
+    "Lcom/vivo/gameassistant/homegui/sideslide/controlcenter/switches/model/j;->C(IF)V": "47911ac015b19fccddeec91fc4b0f5e694bde930b448d067b5b6367e4358c390",
+    "Lcom/vivo/gameassistant/homegui/sideslide/controlcenter/switches/model/j;->o()Lcom/vivo/gameassistant/homegui/sideslide/controlcenter/switches/model/QuickSwitchItemType;": "8f28df8944d37ce0ac58348d2d33182a47935172d3ca935b7f58e24fee5f9c3e",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/a;->onGameSdkEvent(Lcom/vivo/gameassistant/entity/GameSDKEvent;)V": "3778e523edd275644d45cee1b207459d638d416f5c63453e84dfa4251a601219",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/utils/k;->b(Lcom/vivo/gameassistant/inputbuttons/gameshoulder/entity/GameShoulderDetailsEntity;IIIZ)Ljava/lang/String;": "b0b55557b150ebb710eb3495e4aef8c6ad1d2af2ad5f8bdb9ddae83baabc64f7",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/utils/k;->p(Ljava/lang/String;)Z": "57f3df4002794891d41fd3c2be37ac5b85a9f7fccb6cfd2dad0618f91fc347ae",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/utils/k;->q(Ljava/lang/String;)Z": "4fc5ff56cfabac0b719b740a319017520f90e815af8b6b779d88362e5ee09c8b",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/utils/k;->r(Ljava/lang/String;)V": "5e0333179d4c82efd5edf3813d7f6b924539494d6515572eeef1a5d5aae4cad5",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/utils/l;->a(Landroid/content/Context;Z)Ljava/util/HashMap;": "cdad97dfd618e12e9a6af856f6e4e6f72286f2dcc39f4a86981565e4121c6875",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/view/GameShoulderPreferencesView;->B0()V": "7c652798260b6fd638b741cecc353a4a556575b3a698b8ae11887bba420f8e85",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/view/GameShoulderSettingsView;->b1()V": "de2e5a4ffd798e80a26152d84b0e0be61ba57c70b174608ffa11dc8f412fb92e",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/view/GameShoulderSettingsView;->g1()V": "e246034e2913676f66aeb532a3e4de280847c42b6cd7bfa41b09f0b3aaa0f9da",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/view/GameShoulderSettingsView;->r1(Landroid/view/InputEvent;ZIZZZ)V": "5c29baebc535de9a66fda7739ccc37af3942ad885dc4719cf8555386ff2591af",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/view/GameShoulderUserGuideView;->E0()V": "955139661d230d045e7206906b2fc21abfa42f9685393f1af1f7ec8f00851978",
+    "Lcom/vivo/gameassistant/r;->U0()Ljava/lang/String;": "ba270c70b1a65670c092b94aac5ea42359f9110157f85f024a8588b11c572f2a",
+    "Lcom/vivo/gameassistant/r;->V()Lcom/vivo/gameassistant/r;": "e9af8540aaddddf6fb0148b9df18fd97ba23b4a4d72e6d4ddfe026bddac802cb",
+    "Lcom/vivo/gameassistant/utils/i0;->e1(Landroid/content/Context;)Z": "16365e196dfd1ffeac7910204c7551df1c70d5e010440c2895e827cafe3b36f5",
+    "Lcom/vivo/gameassistant/utils/i0;->m1(Ljava/lang/String;)Z": "eec941092c7ea7a8ff305ed9f869561ff86a8658f16da05138a0354b7cdfef41",
+    "Lcom/vivo/gamedaemon/h;->W0(Ljava/lang/String;)V": "86ee4ecb4f66412d5a02a61492a16e204960ea1194696a0fc8dd01457285cfb4",
+    "Lcom/vivo/gamedaemon/h;->c0(ILjava/lang/String;)V": "b66b574c5deb61642b2a994f00208ac4dd3ab213e761f98054c4f171b3ae4c5b",
+    "Lcom/vivo/gamedaemon/h;->e1(Ljava/lang/String;II)V": "150190f0b29d15c358148049cc185185c8bcbe47e3c65e9de8fa44f2d69492c0",
+    "Lcom/vivo/gamedaemon/h;->v0(Ljava/util/List;ZILjava/lang/String;Z)V": "11ad1e4b5383adeafb414e442c0e21473c1ae071d19a2d7f23872838c2dd950b",
+    "Lcom/vivo/gamedaemon/m0;->C()Ljava/util/List;": "efff7b5542d5acf7c81ce2aa0edc3223fb9515d55235e1d26984259464c6e062",
+    "Ldj/a;->closeGameShoulder()V": "1cc0690d2c0cd39889e1ab8ea2b06fdd81ca3b38d39f4c0b2fadf32bbec9e02b",
+    "Ldj/a;->g(Landroid/view/InputEvent;I)V": "13fcbc1599f11d274c6ad85979b51ebeee4f527e9989ef7759afc873016efa2a",
+    "Ldj/a;->handleGameForeground(Z)V": "925cb0311b551adffe9d27e288f66c9e9d2f4dacef8199f75d6101c2a83fd57e",
+    "Ldj/a;->l(IZ)V": "b584398bd8fa352a2a5f9a15ffdb4a2452da97871026bfa1810528073c195d20",
+    "Ldj/a;->q()V": "ea63d0a59d4dbed2dd301aff18b52a3f9a15b74c7b03af22d7b0ea7386b5f498",
+    "Ldj/a;->r()V": "3def701063b715c16989b46fef23eb09390317fbf81a98acb29eb3d76b9a4cc6",
+    "Ldj/a;->unregisterGameCubeListener()V": "e5455241f1c36d459d6291acd2b249c2864fa5841451fee65432e440063676c6",
+    "Ldj/a;->w(Lcom/vivo/gameassistant/inputbuttons/gameshoulder/entity/GameShoulderDetailsEntity;)V": "9cd6913ad1a27de7bb977f2e4096edcfb40e3dc7e34629f4948ee67e54c753b0",
+    "Lej/i0;->processPressAnim(Landroid/view/InputEvent;ZIZZI)V": "f106ea7a9f6b3246a272fc02c33d61ccf6da236a50fc142acaaf225c18210f79",
+    "Lfh/b;->h(Landroid/content/Context;Landroid/multidisplay/MultiDisplayManager;Lcom/vivo/gameassistant/utils/x;ZZLjava/util/List;Ljava/util/List;Lgi/b;)V": "ab201171ac51c67746df6ea0133de37e32692e2819437cdec0970a7d0f5ae29f",
+    "Lof/h;->m(IIIILcom/vivo/gameassistant/frameinterpolation/FrameInterpolationState;)V": "2b862d98f347ae2d5f5c560919793add01f21ef41344b6d9795e34bd63acd42a"
+  },
+  "fields": [
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/view/GameShoulderPreferencesView;->f0:Lcom/vivo/gameassistant/inputbuttons/gameshoulder/IGameShoulderContract$IMainView;",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/view/GameShoulderSettingsView;->j0:Ljava/lang/String;",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/view/GameShoulderSettingsView;->l0:Lej/i0;",
+    "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/view/GameShoulderUserGuideView;->A:Lcom/vivo/gameassistant/inputbuttons/gameshoulder/IGameShoulderContract$IMainView;",
+    "Lcom/vivo/gamedaemon/h;->b:Ljava/lang/String;",
+    "Ldj/a;->c:Landroid/content/Context;",
+    "Ldj/a;->d:Ljava/lang/String;",
+    "Ldj/a;->f:Lcom/vivo/gameassistant/inputbuttons/gameshoulder/entity/GameShoulderDetailsEntity;",
+    "Lej/i0;->b:Lcom/vivo/gameassistant/inputbuttons/gameshoulder/IGameShoulderContract$IPresenter;"
+  ],
+  "category_callers": [
+    {
+      "signature": "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/a;->onGameSdkEvent(Lcom/vivo/gameassistant/entity/GameSDKEvent;)V",
+      "calls": 2
+    },
+    {
+      "signature": "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/utils/k;->q(Ljava/lang/String;)Z",
+      "calls": 1
+    },
+    {
+      "signature": "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/utils/l;->a(Landroid/content/Context;Z)Ljava/util/HashMap;",
+      "calls": 1
+    },
+    {
+      "signature": "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/view/GameShoulderPreferencesView;->B0()V",
+      "calls": 1
+    },
+    {
+      "signature": "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/view/GameShoulderSettingsView;->b1()V",
+      "calls": 1
+    },
+    {
+      "signature": "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/view/GameShoulderSettingsView;->g1()V",
+      "calls": 2
+    },
+    {
+      "signature": "Lcom/vivo/gameassistant/inputbuttons/gameshoulder/view/GameShoulderUserGuideView;->E0()V",
+      "calls": 1
+    },
+    {
+      "signature": "Lcom/vivo/gameassistant/utils/i0;->e1(Landroid/content/Context;)Z",
+      "calls": 1
+    },
+    {
+      "signature": "Ldj/a;->g(Landroid/view/InputEvent;I)V",
+      "calls": 1
+    },
+    {
+      "signature": "Ldj/a;->l(IZ)V",
+      "calls": 1
+    },
+    {
+      "signature": "Ldj/a;->w(Lcom/vivo/gameassistant/inputbuttons/gameshoulder/entity/GameShoulderDetailsEntity;)V",
+      "calls": 1
+    },
+    {
+      "signature": "Lej/i0;->processPressAnim(Landroid/view/InputEvent;ZIZZI)V",
+      "calls": 1
+    },
+    {
+      "signature": "Lfh/b;->h(Landroid/content/Context;Landroid/multidisplay/MultiDisplayManager;Lcom/vivo/gameassistant/utils/x;ZZLjava/util/List;Ljava/util/List;Lgi/b;)V",
+      "calls": 1
+    },
+    {
+      "signature": "Lof/h;->m(IIIILcom/vivo/gameassistant/frameinterpolation/FrameInterpolationState;)V",
+      "calls": 1
+    }
+  ]
+}

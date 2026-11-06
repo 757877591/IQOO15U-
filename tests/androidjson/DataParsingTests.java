@@ -21,8 +21,8 @@ public final class DataParsingTests {
     private static JSONObject catalog(boolean scan, String label) throws Exception {
         JSONObject space = new JSONObject().put("id", 0).put("serial", 0).put("title", "主空间")
             .put("kind", "MAIN").put("warning", "").put("unlocked", true).put("scanned", scan);
-        return new JSONObject().put("ok", true).put("mainUser", 0).put("cubeVersion", Constants.CUBE_VERSION)
-            .put("cubeCode", Constants.CUBE_CODE).put("appsRead", scan).put("users", new JSONArray().put(space))
+        return new JSONObject().put("ok", true).put("mainUser", 0).put("cubeVersion", GameCubeVersion.V14.versionName)
+            .put("cubeCode", GameCubeVersion.V14.versionCode).put("appsRead", scan).put("users", new JSONArray().put(space))
             .put("apps", scan ? new JSONArray().put(app(0, 0, "com.example.hostile", label)) : new JSONArray());
     }
     public static void main(String[] args) throws Exception {
@@ -41,6 +41,13 @@ public final class DataParsingTests {
         rejects(() -> parsed.validateScope(Set.of(new ScanPolicy.SpaceKey(10, 99))), "unrequested space rejected");
         rejects(() -> parsed.validateScope(null), "scan cannot masquerade as inspect");
         Catalog inspect = new Catalog(catalog(false, "").toString()); inspect.validateScope(null);
+        check(inspect.compatible, "legacy OEM is compatible");
+        JSONObject newVersion = catalog(false, "").put("cubeVersion", "15.0.07.01_de").put("cubeCode", 1500701L);
+        check(new Catalog(newVersion.toString()).compatible, "new OEM is compatible in actual catalog");
+        newVersion.put("cubeCode", 1401600L);
+        check(!new Catalog(newVersion.toString()).compatible, "mixed OEM name and code rejected");
+        newVersion.put("cubeVersion", "15.0.07.02_de").put("cubeCode", 1500702L);
+        check(!new Catalog(newVersion.toString()).compatible, "unknown OEM rejected");
         check(inspect.apps.isEmpty(), "inspect reads no apps");
         rejects(() -> inspect.validateScope(owner), "inspect cannot masquerade as scan");
         JSONObject wrong = catalog(true, "app"); wrong.getJSONArray("apps").getJSONObject(0).put("serial", 1);
